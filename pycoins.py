@@ -2,6 +2,8 @@
 import secrets
 import hashlib
 import random
+import os
+
 
 # To make transaction you need 3
 # Flow should go like
@@ -17,6 +19,7 @@ n = 1157920892373161954235709850086879078528375642790749043826051631415181614943
 # Generator points
 g = (55066263022277343669578718895168534326250603453777594175500187360389116729240, 32670510020758816978083085130507043184471273380659243275938904335757337482424)
 a = 0
+O = None
 
 privKey = []
 # Generates private key - Random 256 bit number
@@ -25,12 +28,23 @@ privKey = []
 # max: 115792089237316195423570985008687907852837564279074904382605163141518161494336
 def PrivKeyGen():
     # Generates 256 bits
-    key = secrets.randbelow(n - 1) + 1  # 1 <= key <= n-1
-    privKey.append(key)
-    return key
+
+    file_path = "privkey.txt"
+    if os.path.isfile(file_path):
+        with open("privkey.txt", "r", encoding="utf-8") as file:
+            content = file.read()
+            print(content)
+
+    else:
+        key = secrets.randbelow(n - 1) + 1  # 1 <= key <= n-1
+        with open("privkey.txt", "w", encoding="utf-8") as file:
+            file.write(str(key))
+        privKey.append(key)
+
 
 def publicKeyGen():
-    private_key = privKey[0]
+    with open("privkey.txt", "r", encoding="utf-8") as file:
+        private_key = int(file.read().strip())
     public_key = multiply(private_key, g, a, p)
     return public_key
 
@@ -49,7 +63,6 @@ def mod_inverse(a: int, m: int) -> int:
 
     return s0 % m
 
-O = None
 
 # point, a, p ?
 def double(point, a, p):
@@ -116,8 +129,13 @@ def multiply(k, point, a, p):
 PrivKeyGen()
 public_key = publicKeyGen()
 
-print("Private Key:", hex(privKey[0]))
-print("Public Key X:", hex(public_key[0]))
-print("Public Key Y:", hex(public_key[1]))
+with open("privkey.txt", "r", encoding="utf-8") as file:
+    private_key = int(file.read().strip())
 
+print("Public Key X:", public_key[0])
+print("Public Key Y:", public_key[1])
 
+# TODO 1. Verfication that public key is on    the curve
+# TODO 2 . Bitcoin P2PKH
+# TODO verification that public key is on the curve
+# TODO We are going to create, digitally sign, and broadcast a Bitcoin transaction in pure Python
